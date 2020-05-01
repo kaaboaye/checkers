@@ -15,6 +15,7 @@ module.exports = {
 
     "@typescript-eslint/quotes": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/indent": "off",
 
     "import/prefer-default-export": "off",
 
