@@ -1,6 +1,11 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
+import { createCheckers } from "./checkers";
+
+const checkers = createCheckers();
+
+const elko = () => checkers.helloWorld().then(console.log);
 
 function App() {
   return (
@@ -18,6 +23,8 @@ function App() {
         >
           Learn React
         </a>
+
+        <span onClick={elko}>ELKO</span>
       </header>
     </div>
   );

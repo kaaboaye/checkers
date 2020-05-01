@@ -19,8 +19,12 @@ module.exports = {
 
     "import/prefer-default-export": "off",
 
-    "no-console": "error",
+    "no-console": "warn",
 
-    "prettier/prettier": "error",
+    "jsx-a11y/interactive-supports-focus": "off",
+    "jsx-a11y/click-events-have-key-events": "off",
+    "jsx-a11y/no-static-element-interactions": "off",
+
+    "prettier/prettier": "warn",
   },
 };
