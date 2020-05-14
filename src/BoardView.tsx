@@ -42,7 +42,7 @@ export const BoardView = () => {
     const tile = { row: 0, col: 0 };
     getPossibleMoves(tile);
     setSelectedCords(tile);
-  }, [board]);
+  }, [board, getPossibleMoves]);
 
   return (
     <table>
