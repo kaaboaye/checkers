@@ -1,0 +1,26 @@
+language: rust
+rust: "1.43.1"
+
+before_install:
+  - nvm install 14.2.0
+  - npm i -g yarn
+
+install:
+  - yarn install
+
+script:
+  - npm run build
+
+cache:
+  directories:
+    - .yarn
+    - node_modules
+    - target
+
+deploy:
+  local-dir: dist
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  on:
+    branch: master
