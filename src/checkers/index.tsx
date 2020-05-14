@@ -38,7 +38,7 @@ const checkersPromise = new Promise<Checkers>((resolve) => {
         if (res) {
           const wrappedRust = wrapRust(rust);
           resolve(wrappedRust);
-          console.log("rust is ready");
+          console.log("rust is ready", rust);
           clearTimeout(timer);
         }
       })
