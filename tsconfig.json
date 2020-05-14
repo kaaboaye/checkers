@@ -1,19 +1,16 @@
 {
   "compilerOptions": {
+    "outDir": "./dist/",
+    "noImplicitAny": true,
+    "module": "commonjs",
     "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
-    "allowJs": true,
+    "jsx": "react",
+    "sourceMap": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react"
+    "strict": true,
+    "esModuleInterop": true,
+    "allowJs": true
   },
-  "include": ["src"]
+  "excluded": ["**/*.wasm"]
 }

@@ -1,17 +1,13 @@
 import React from "react";
-import logo from "./logo.svg";
-import "./App.css";
-import { createCheckers } from "./checkers";
+import { loadRust } from "./rust";
 
-const checkers = createCheckers();
+// import("./rust").finally(console.log);
+loadRust();
 
-const elko = () => checkers.helloWorld().then(console.log);
-
-function App() {
+export function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
         </p>
@@ -24,10 +20,8 @@ function App() {
           Learn React
         </a>
 
-        <span onClick={elko}>ELKO</span>
+        <span>ELKO</span>
       </header>
     </div>
   );
 }
-
-export default App;
