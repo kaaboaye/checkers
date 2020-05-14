@@ -25,7 +25,7 @@ lto = true
 serde = "^1.0.59"
 serde_derive = "^1.0.59"
 nalgebra = "0.21.0"
-lazy_static = "1.4.0"
+lazy_mut = "0.1.0"
 
 [dependencies.wasm-bindgen]
 version = "^0.2"

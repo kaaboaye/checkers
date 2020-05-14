@@ -12,6 +12,11 @@ export enum Tile {
   BlackQuin,
 }
 
+export interface TileCords {
+  row: number;
+  col: number;
+}
+
 export const BOARD_SIZE = 8;
 export type Board = Tile[][];
 
@@ -46,8 +51,9 @@ const checkersPromise = new Promise<Checkers>((resolve) => {
 type Checkers = ReturnType<typeof wrapRust>;
 function wrapRust(rust: Remote<import("./worker").Checkers>) {
   return {
-    getTile: () => rust.getTile() as Promise<Tile>,
     getTiles: () => rust.getTiles() as Promise<Tile[]>,
+    getPossibleMoves: ({ row, col }: TileCords) =>
+      rust.getPossibleMoves(row, col) as Promise<TileCords[]>,
   };
 }
 
@@ -58,16 +64,20 @@ type CheckersThunk<Args = void> = Thunk<CheckersState, Args, Injections>;
 interface CheckersState {
   checkers: Checkers | null;
   board: Board | null;
+  possibleMoves: TileCords[];
 
   setCheckers: CheckersAction<Checkers>;
   setBoard: CheckersAction<Tile[]>;
+  setPossibleMoves: CheckersAction<TileCords[]>;
 
   initialize: CheckersThunk;
+  getPossibleMoves: CheckersThunk<TileCords>;
 }
 
 const checkersContext = createContextStore<CheckersState, void>({
   checkers: null,
   board: null,
+  possibleMoves: [],
 
   setCheckers: action((state, checkers) => {
     state.checkers = checkers;
@@ -91,14 +101,29 @@ const checkersContext = createContextStore<CheckersState, void>({
     state.board = board;
   }),
 
+  setPossibleMoves: action((state, positions) => {
+    state.possibleMoves = positions;
+  }),
+
   initialize: thunk((actions) => {
     console.log("initializing the store");
 
     checkersPromise.then((checkers) => {
+      console.log("checkers", checkers);
       actions.setCheckers(checkers);
 
       checkers.getTiles().then((tiles) => actions.setBoard(tiles));
     });
+  }),
+
+  getPossibleMoves: thunk((actions, position, { getState }) => {
+    const state = getState();
+
+    if (state.checkers === null) return;
+
+    state.checkers
+      .getPossibleMoves(position)
+      .then((positions) => actions.setPossibleMoves(positions));
   }),
 });
 
@@ -129,3 +154,9 @@ export const CheckersProvider: React.FC = ({ children }) => {
 
 export const useBoard = () =>
   checkersContext.useStoreState((store) => store.board);
+
+export const usePossibleMoves = () =>
+  checkersContext.useStoreState((store) => store.possibleMoves);
+
+export const useGetPossibleMoves = () =>
+  checkersContext.useStoreActions((store) => store.getPossibleMoves);

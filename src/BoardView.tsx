@@ -1,9 +1,16 @@
 import React from "react";
-import { useBoard } from "./checkers";
+import {
+  useBoard,
+  usePossibleMoves,
+  TileCords,
+  useGetPossibleMoves,
+} from "./checkers";
 import { TileView } from "./TileView";
 
 export const BoardView = () => {
   const board = useBoard();
+  const possibleMoves = usePossibleMoves();
+  const getPossibleMoves = useGetPossibleMoves();
 
   return (
     <table>
@@ -14,11 +21,16 @@ export const BoardView = () => {
               <td
                 key={colIdx}
                 style={{
-                  backgroundColor: (rowIdx + colIdx) % 2 ? "gray" : "white",
+                  backgroundColor: tileBackgroundColor(
+                    rowIdx,
+                    colIdx,
+                    possibleMoves
+                  ),
                   textAlign: "center",
                   width: "64px",
                   height: "64px",
                 }}
+                onClick={() => getPossibleMoves({ row: rowIdx, col: colIdx })}
               >
                 <TileView tile={tile} />
               </td>
@@ -29,3 +41,19 @@ export const BoardView = () => {
     </table>
   );
 };
+
+function tileBackgroundColor(
+  rowIdx: number,
+  colIdx: number,
+  possibleMoves: TileCords[]
+) {
+  if (
+    possibleMoves.findIndex(
+      (cords) => cords.row === rowIdx && cords.col === colIdx
+    ) !== -1
+  ) {
+    return "gold";
+  }
+
+  return (rowIdx + colIdx) % 2 ? "gray" : "white";
+}

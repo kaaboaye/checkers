@@ -164,6 +164,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "lazy_mut"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "767a23ea51ed54e6a9cd2a6d0fe156feb4934a4d95e585b55f4585577e195a5b"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -391,7 +400,7 @@ dependencies = [
  "console_error_panic_hook",
  "futures",
  "js-sys",
- "lazy_static",
+ "lazy_mut",
  "nalgebra",
  "serde",
  "serde_derive",
