@@ -1,15 +1,18 @@
 import { wrap, Remote } from "comlink";
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { useEffect } from "react";
+import { Thunk, createContextStore, thunk, Action, action } from "easy-peasy";
 
+// it has to be copied since it cannot be imported as a value
+// because rust cannot be imported in entry bundle
 export enum Tile {
-  Nothing = 0,
-  RedPawn = 1,
-  RedQuin = 2,
-  BlackPawn = 3,
-  BlackQuin = 4,
+  Nothing,
+  RedPawn,
+  RedQuin,
+  BlackPawn,
+  BlackQuin,
 }
 
-export type Checkers = ReturnType<typeof wrapRust>;
+export type Board = Tile[][];
 
 const checkersPromise = new Promise<Checkers>((resolve) => {
   const worker = new Worker("./worker", {
@@ -39,48 +42,89 @@ const checkersPromise = new Promise<Checkers>((resolve) => {
   pingWorker();
 });
 
+type Checkers = ReturnType<typeof wrapRust>;
 function wrapRust(rust: Remote<import("./worker").Checkers>) {
   return {
-    getTile: () => rust.getTile().then((tile) => Tile[tile]),
-    getBoard: () =>
-      rust
-        .getBoard()
-        .then((board: number[]) => board.map((tile) => Tile[tile])),
+    getTile: () => rust.getTile() as Promise<Tile>,
+    getBoard: () => rust.getBoard() as Promise<Tile[]>,
   };
 }
 
-const checkersContext = createContext<Checkers | null>(null);
+type Injections = {};
+type CheckersAction<Args = void> = Action<CheckersState, Args>;
+type CheckersThunk<Args = void> = Thunk<CheckersState, Args, Injections>;
 
-export const CheckersProvider: React.FC = ({ children }) => {
-  const [value, setValue] = useState<Checkers | null>(null);
+interface CheckersState {
+  checkers: Checkers | null;
+  board: Board | null;
+
+  setCheckers: CheckersAction<Checkers>;
+  setBoard: CheckersAction<Tile[]>;
+
+  initialize: CheckersThunk;
+}
+
+const checkersContext = createContextStore<CheckersState, void>({
+  checkers: null,
+  board: null,
+
+  setCheckers: action((state, checkers) => {
+    state.checkers = checkers;
+  }),
+
+  setBoard: action((state, tiles) => {
+    const board: Board = Array(12).fill(null);
+
+    tiles.forEach((tile, idx) => {
+      const row = idx % 12;
+      const col = Math.floor(idx / 12);
+
+      // initialize row
+      if (board[row] == null) {
+        board[row] = Array(12);
+      }
+
+      board[row][col] = tile;
+    });
+
+    state.board = board;
+  }),
+
+  initialize: thunk((actions) => {
+    console.log("initializing the store");
+
+    checkersPromise.then((checkers) => {
+      actions.setCheckers(checkers);
+
+      checkers.getBoard().then((tiles) => actions.setBoard(tiles));
+    });
+  }),
+});
+
+function StoreInitializer() {
+  const checkers = checkersContext.useStoreState((store) => store.checkers);
+  const initialize = checkersContext.useStoreActions(
+    (store) => store.initialize
+  );
 
   useEffect(() => {
-    checkersPromise.then((checkers) => {
-      setValue(checkers);
-    });
-  }, []);
+    if (checkers !== null) return;
+    initialize();
+  }, [checkers, initialize]);
 
-  useEffect(() => console.log("value", value), [value]);
+  return null;
+}
 
+// initialize the store
+
+export const CheckersProvider: React.FC = ({ children }) => {
   return (
-    <checkersContext.Provider value={value}>
+    <checkersContext.Provider>
+      <StoreInitializer />
       {children}
     </checkersContext.Provider>
   );
 };
 
-export function useCheckers() {
-  return useContext(checkersContext);
-}
-
-export function useBoard() {
-  const checkers = useCheckers();
-  const [board, setBoard] = useState<Tile[] | null>(null);
-
-  useEffect(() => {
-    if (!checkers) return;
-    checkers.getBoard().then(setBoard);
-  }, [checkers]);
-
-  return board;
-}
+export const useBoard = () =>
+  checkersContext.useStoreState((store) => store.board);

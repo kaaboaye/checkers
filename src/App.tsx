@@ -1,11 +1,11 @@
 import React from "react";
 import { CheckersProvider } from "./checkers";
-import { Board } from "./Board";
+import { BoardView } from "./BoardView";
 
 export function App() {
   return (
     <CheckersProvider>
-      <Board />
+      <BoardView />
     </CheckersProvider>
   );
 }

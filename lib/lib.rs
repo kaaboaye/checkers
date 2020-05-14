@@ -1,3 +1,8 @@
+#[macro_use]
+extern crate lazy_static;
+extern crate nalgebra;
+
+mod board;
 mod tile;
 
 use crate::tile::Tile;
@@ -25,16 +30,10 @@ pub fn getTile() -> Tile {
 #[wasm_bindgen]
 #[allow(non_snake_case)]
 pub fn getBoard() -> JsValue {
-  let board = [
-    Tile::Nothing,
-    Tile::RedPawn,
-    Tile::RedQuin,
-    Tile::BlackPawn,
-    Tile::BlackQuin,
-  ]
-  .iter()
-  .map(|t| (*t) as i32)
-  .collect::<Vec<i32>>();
+  let board = board::get_board()
+    .iter()
+    .map(|t| (*t) as i32)
+    .collect::<Vec<i32>>();
 
   JsValue::from_serde(&board).unwrap()
 }
