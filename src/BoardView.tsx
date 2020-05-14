@@ -14,16 +14,13 @@ export const BoardView = () => {
   const getPossibleMoves = useGetPossibleMoves();
   const movePawn = useMovePawn();
 
-  const [selectedCords, setSelectedCords] = useState<TileCords | null>(null);
+  const [selectedCords, setSelectedCords] = useState<TileCords>({
+    row: 0,
+    col: 0,
+  });
 
   const onTileClick = useCallback(
     (cords: TileCords) => {
-      if (selectedCords === null) {
-        setSelectedCords(cords);
-        getPossibleMoves(cords);
-        return;
-      }
-
       const to = possibleMoves.find(
         (destination) =>
           cords.row === destination.row && cords.col === destination.col
