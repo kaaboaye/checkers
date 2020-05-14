@@ -1,18 +1,18 @@
 import React, { CSSProperties } from "react";
 import { Tile } from "./checkers";
 
-const style: CSSProperties = { fontSize: "64px", lineHeight: "0.6" };
+const styles = (custom: CSSProperties = {}): CSSProperties => ({
+  fontSize: "64px",
+  lineHeight: "0.6",
+  ...custom,
+});
 
 const Pawn = ({ color }: { color: "red" | "black" }) => (
-  <span style={style} color={color}>
-    &#x25CF;
-  </span>
+  <span style={styles({ color })}>&#x25CF;</span>
 );
 
 const Queen = ({ color }: { color: "red" | "black" }) => (
-  <span style={style} color={color}>
-    &#x25CE;
-  </span>
+  <span style={styles({ color })}>&#x25CE;</span>
 );
 
 export const TileView = ({ tile }: { tile: Tile }) => {
@@ -30,6 +30,6 @@ export const TileView = ({ tile }: { tile: Tile }) => {
       return <Queen color={"black"} />;
 
     default:
-      return <span style={style}></span>;
+      return <span style={styles()}></span>;
   }
 };
