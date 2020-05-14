@@ -1,6 +1,6 @@
-import pkg = require("../pkg/index.js");
+import pkg = require("../pkg/index");
 
-export default new Promise<any>((resolve) => {
+export default new Promise<typeof pkg>((resolve) => {
   require.ensure(["../pkg/index.js"], (require) => {
     resolve(require("../pkg/index.js"));
   });

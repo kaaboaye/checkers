@@ -10,7 +10,8 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "esModuleInterop": true,
-    "allowJs": true
+    "allowJs": true,
+    "lib": ["WebWorker", "ESNext", "DOM"]
   },
   "excluded": ["**/*.wasm"]
 }
