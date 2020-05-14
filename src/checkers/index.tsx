@@ -54,6 +54,8 @@ function wrapRust(rust: Remote<import("./worker").Checkers>) {
     getTiles: () => rust.getTiles() as Promise<Tile[]>,
     getPossibleMoves: ({ row, col }: TileCords) =>
       rust.getPossibleMoves(row, col) as Promise<TileCords[]>,
+    movePawn: (from: TileCords, to: TileCords) =>
+      rust.movePawn(from.row, from.col, to.row, to.col),
   };
 }
 
@@ -71,7 +73,9 @@ interface CheckersState {
   setPossibleMoves: CheckersAction<TileCords[]>;
 
   initialize: CheckersThunk;
+  getBoard: CheckersThunk;
   getPossibleMoves: CheckersThunk<TileCords>;
+  movePawn: CheckersThunk<{ from: TileCords; to: TileCords }>;
 }
 
 const checkersContext = createContextStore<CheckersState, void>({
@@ -111,19 +115,31 @@ const checkersContext = createContextStore<CheckersState, void>({
     checkersPromise.then((checkers) => {
       console.log("checkers", checkers);
       actions.setCheckers(checkers);
-
-      checkers.getTiles().then((tiles) => actions.setBoard(tiles));
+      actions.getBoard();
     });
+  }),
+
+  getBoard: thunk((actions, _, { getState }) => {
+    const state = getState();
+    if (state.checkers === null) return;
+
+    state.checkers.getTiles().then((tiles) => actions.setBoard(tiles));
   }),
 
   getPossibleMoves: thunk((actions, position, { getState }) => {
     const state = getState();
-
     if (state.checkers === null) return;
 
     state.checkers
       .getPossibleMoves(position)
       .then((positions) => actions.setPossibleMoves(positions));
+  }),
+
+  movePawn: thunk((actions, { from, to }, { getState }) => {
+    const state = getState();
+    if (state.checkers === null) return;
+
+    state.checkers.movePawn(from, to).then(() => actions.getBoard());
   }),
 });
 
@@ -160,3 +176,6 @@ export const usePossibleMoves = () =>
 
 export const useGetPossibleMoves = () =>
   checkersContext.useStoreActions((store) => store.getPossibleMoves);
+
+export const useMovePawn = () =>
+  checkersContext.useStoreActions((store) => store.movePawn);

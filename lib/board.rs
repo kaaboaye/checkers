@@ -3,7 +3,7 @@ use nalgebra::{MatrixN, U8};
 
 pub type Board = MatrixN<Tile, U8>;
 
-const BOARD_SIZE: i32 = 8;
+const BOARD_SIZE: usize = 8;
 
 lazy_mut! {
   static mut __BOARD: Board = Board::from_fn(|row, col| {
@@ -24,7 +24,11 @@ pub fn get_board() -> &'static Board {
   board()
 }
 
-pub fn possible_moves((row, col): (i32, i32)) -> Vec<(i32, i32)> {
+pub fn possible_moves((row, col): (usize, usize)) -> Vec<(usize, usize)> {
+  if (row + col) % 2 == 0 || board()[(row, col)] == Tile::Nothing {
+    return vec![];
+  }
+
   [
     (row + 1, col + 1),
     (row + 1, col - 1),
@@ -33,6 +37,22 @@ pub fn possible_moves((row, col): (i32, i32)) -> Vec<(i32, i32)> {
   ]
   .iter()
   .cloned()
-  .filter(|(row, col)| (0..BOARD_SIZE).contains(row) && (0..BOARD_SIZE).contains(col))
+  .filter(|(row, col)| {
+    (0..BOARD_SIZE).contains(row)
+      && (0..BOARD_SIZE).contains(col)
+      && board()[(*row, *col)] == Tile::Nothing
+  })
   .collect()
+}
+
+pub fn move_pawn(from: (usize, usize), to: (usize, usize)) {
+  let destinations = possible_moves(from);
+
+  if !destinations.contains(&to) {
+    return;
+  }
+
+  let pawn = board()[from];
+  board()[from] = Tile::Nothing;
+  board()[to] = pawn;
 }

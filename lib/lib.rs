@@ -37,7 +37,7 @@ pub fn getTiles() -> JsValue {
 
 #[wasm_bindgen]
 #[allow(non_snake_case)]
-pub fn getPossibleMoves(row: i32, col: i32) -> JsValue {
+pub fn getPossibleMoves(row: usize, col: usize) -> JsValue {
   let values = board::possible_moves((row, col))
     .iter()
     .map(|(row, col)| Position {
@@ -47,4 +47,10 @@ pub fn getPossibleMoves(row: i32, col: i32) -> JsValue {
     .collect::<Vec<Position>>();
 
   JsValue::from_serde(&values).unwrap()
+}
+
+#[wasm_bindgen]
+#[allow(non_snake_case)]
+pub fn movePawn(from_row: usize, from_col: usize, to_row: usize, to_col: usize) {
+  board::move_pawn((from_row, from_col), (to_row, to_col))
 }
