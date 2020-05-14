@@ -1,8 +1,9 @@
 import React from "react";
-import { loadRust } from "./rust";
+import rust from "./rust";
 
 // import("./rust").finally(console.log);
-loadRust();
+
+rust.then(console.log, console.warn);
 
 export function App() {
   return (

@@ -1,10 +1,7 @@
-export function loadRust() {
-  require("../pkg/index.js")
-    .catch(console.error)
-    .then((rust) => {
-      if (!rust) return;
+import pkg = require("../pkg/index.js");
 
-      console.log(rust);
-      console.log(rust.elko());
-    });
-}
+export default new Promise<any>((resolve) => {
+  require.ensure(["../pkg/index.js"], (require) => {
+    resolve(require("../pkg/index.js"));
+  });
+});
