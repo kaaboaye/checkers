@@ -10,8 +10,16 @@ export const BoardView = () => {
       <tbody>
         {board?.map((row, rowIdx) => (
           <tr key={rowIdx}>
-            {row.map((tile, tileIdx) => (
-              <td key={tileIdx}>
+            {row.map((tile, colIdx) => (
+              <td
+                key={colIdx}
+                style={{
+                  backgroundColor: (rowIdx + colIdx) % 2 ? "gray" : "white",
+                  textAlign: "center",
+                  width: "64px",
+                  height: "64px",
+                }}
+              >
                 <TileView tile={tile} />
               </td>
             ))}

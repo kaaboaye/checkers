@@ -30,6 +30,6 @@ export const TileView = ({ tile }: { tile: Tile }) => {
       return <Queen color={"black"} />;
 
     default:
-      return <span style={style}>-</span>;
+      return <span style={style}></span>;
   }
 };
