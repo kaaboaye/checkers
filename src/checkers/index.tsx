@@ -12,6 +12,7 @@ export enum Tile {
   BlackQuin,
 }
 
+export const BOARD_SIZE = 8;
 export type Board = Tile[][];
 
 const checkersPromise = new Promise<Checkers>((resolve) => {
@@ -46,7 +47,7 @@ type Checkers = ReturnType<typeof wrapRust>;
 function wrapRust(rust: Remote<import("./worker").Checkers>) {
   return {
     getTile: () => rust.getTile() as Promise<Tile>,
-    getBoard: () => rust.getBoard() as Promise<Tile[]>,
+    getTiles: () => rust.getTiles() as Promise<Tile[]>,
   };
 }
 
@@ -73,15 +74,15 @@ const checkersContext = createContextStore<CheckersState, void>({
   }),
 
   setBoard: action((state, tiles) => {
-    const board: Board = Array(12).fill(null);
+    const board: Board = Array(BOARD_SIZE).fill(null);
 
     tiles.forEach((tile, idx) => {
-      const row = idx % 12;
-      const col = Math.floor(idx / 12);
+      const row = idx % BOARD_SIZE;
+      const col = Math.floor(idx / BOARD_SIZE);
 
       // initialize row
       if (board[row] == null) {
-        board[row] = Array(12);
+        board[row] = Array(BOARD_SIZE);
       }
 
       board[row][col] = tile;
@@ -96,7 +97,7 @@ const checkersContext = createContextStore<CheckersState, void>({
     checkersPromise.then((checkers) => {
       actions.setCheckers(checkers);
 
-      checkers.getBoard().then((tiles) => actions.setBoard(tiles));
+      checkers.getTiles().then((tiles) => actions.setBoard(tiles));
     });
   }),
 });

@@ -29,7 +29,7 @@ pub fn getTile() -> Tile {
 
 #[wasm_bindgen]
 #[allow(non_snake_case)]
-pub fn getBoard() -> JsValue {
+pub fn getTiles() -> JsValue {
   let board = board::get_board()
     .iter()
     .map(|t| (*t) as i32)
