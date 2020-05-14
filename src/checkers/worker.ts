@@ -1,10 +1,6 @@
 import { expose } from "comlink";
 import rust from "../rust";
 
-function onLoaded(callback: () => void) {
-  callback();
-}
-
 rust.then((rust) => {
   expose(rust);
 });
