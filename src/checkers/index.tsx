@@ -33,7 +33,7 @@ const checkersPromise = new Promise<Checkers>((resolve) => {
 
     const timer = setTimeout(pingWorker, 100);
 
-    (rust.ping() as Promise<boolean>)
+    (rust.initialize() as Promise<boolean>)
       .then((res) => {
         if (res) {
           const wrappedRust = wrapRust(rust);
