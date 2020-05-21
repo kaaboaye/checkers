@@ -38,10 +38,14 @@ impl Board {
   }
 
   pub fn possible_moves(&self, position: (usize, usize)) -> Vec<PawnMove> {
+    if self.turn == Turn::GameOver {
+      return Vec::new();
+    }
+
     let (row, col) = position;
 
     if (row + col) % 2 == 0 {
-      return vec![];
+      return Vec::new();
     }
 
     match self.data[position] {
