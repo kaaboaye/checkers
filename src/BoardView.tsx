@@ -8,10 +8,12 @@ import {
   PossibleMove,
   useTurn,
   useMakeAMove,
+  useWorking,
 } from "./checkers";
 import { TileView } from "./TileView";
 
 export const BoardView = () => {
+  const working = useWorking();
   const board = useBoard();
   const turn = useTurn();
   const possibleMoves = usePossibleMoves();
@@ -78,9 +80,12 @@ export const BoardView = () => {
         >
           {turn?.toUpperCase()}
         </span>
+        {working && " COMPUTING"}
       </h1>
 
-      <button onClick={() => makeAMove()}>MANUAL AI</button>
+      <button onClick={() => makeAMove()} disabled={working}>
+        MANUAL AI
+      </button>
 
       <label htmlFor="red-auto-ai" style={{ color: "red" }}>
         RED AUTO AI
@@ -90,6 +95,7 @@ export const BoardView = () => {
         type="checkbox"
         checked={redAutoAI}
         onChange={() => setRedAutoAI(!redAutoAI)}
+        disabled={working && !redAutoAI}
       />
 
       <label htmlFor="black-auto-ai">BLACK AUTO AI</label>
@@ -98,6 +104,7 @@ export const BoardView = () => {
         type="checkbox"
         checked={blackAutoAI}
         onChange={() => setBlackAutoAI(!blackAutoAI)}
+        disabled={working && !blackAutoAI}
       />
 
       <table>

@@ -79,11 +79,13 @@ interface CheckersState {
   board: Board | null;
   turn: Turn | null;
   possibleMoves: PossibleMove[];
+  working: boolean;
 
   setCheckers: CheckersAction<Checkers>;
   setBoard: CheckersAction<Tile[]>;
   setTurn: CheckersAction<Turn>;
   setPossibleMoves: CheckersAction<PossibleMove[]>;
+  setWorking: CheckersAction<boolean>;
 
   initialize: CheckersThunk;
   fetchState: CheckersThunk;
@@ -99,6 +101,7 @@ const checkersContext = createContextStore<CheckersState, void>({
   board: null,
   turn: null,
   possibleMoves: [],
+  working: true,
 
   setCheckers: action((state, checkers) => {
     state.checkers = checkers;
@@ -130,6 +133,10 @@ const checkersContext = createContextStore<CheckersState, void>({
     state.possibleMoves = positions;
   }),
 
+  setWorking: action((state, working) => {
+    state.working = working;
+  }),
+
   initialize: thunk((actions) => {
     console.log("initializing the store");
 
@@ -141,8 +148,9 @@ const checkersContext = createContextStore<CheckersState, void>({
   }),
 
   fetchState: thunk((actions) => {
-    actions.getBoard();
-    actions.getTurn();
+    Promise.all([actions.getBoard(), actions.getTurn()]).then(() =>
+      actions.setWorking(false)
+    );
   }),
 
   getBoard: thunk((actions, _, { getState }) => {
@@ -172,12 +180,16 @@ const checkersContext = createContextStore<CheckersState, void>({
     const state = getState();
     if (state.checkers === null) return;
 
+    actions.setWorking(true);
+
     state.checkers.movePawn(from, to).then(() => actions.fetchState());
   }),
 
   makeAMove: thunk((actions, _, { getState }) => {
     const state = getState();
     if (state.checkers === null) return;
+
+    actions.setWorking(true);
 
     state.checkers.makeAMove().then(() => actions.fetchState());
   }),
@@ -207,6 +219,9 @@ export const CheckersProvider: React.FC = ({ children }) => {
     </checkersContext.Provider>
   );
 };
+
+export const useWorking = () =>
+  checkersContext.useStoreState((store) => store.working);
 
 export const useBoard = () =>
   checkersContext.useStoreState((store) => store.board);

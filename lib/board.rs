@@ -1,4 +1,3 @@
-use crate::console_log;
 use crate::tile::Tile;
 use nalgebra::{MatrixN, U8};
 
@@ -12,6 +11,7 @@ pub enum Turn {
   GameOver,
 }
 
+#[derive(Clone)]
 pub struct Board {
   pub data: BoardData,
   pub turn: Turn,
@@ -306,24 +306,8 @@ impl Board {
     }
 
     if let Some(kills) = possible_move.unwrap().kills {
-      console_log!(
-        "move {from:?} --> {kills:?} --> {to:?} pawn {killer:?} killed {victim:?}",
-        from = from,
-        kills = kills,
-        to = to,
-        killer = self.data[to],
-        victim = self.data[kills]
-      );
-
       self.data[kills] = Tile::Nothing;
     } else {
-      console_log!(
-        "move {from:?} --> {to:?} pawn {pawn:?}",
-        from = from,
-        to = to,
-        pawn = self.data[to],
-      );
-
       self.turn = match self.turn {
         Turn::Red => Turn::Black,
         Turn::Black => Turn::Red,
