@@ -53,7 +53,12 @@ export const BoardView = () => {
     <>
       <h1>
         Turn{" "}
-        <span style={{ color: turn == "red" ? "red" : "black" }}>
+        <span
+          style={{
+            color:
+              turn == "red" ? "red" : turn == "game_over" ? "green" : "black",
+          }}
+        >
           {turn?.toUpperCase()}
         </span>
       </h1>

@@ -74,6 +74,7 @@ pub fn getTurn() -> JsValue {
   let turn = match board().turn {
     Turn::Red => "red",
     Turn::Black => "black",
+    Turn::GameOver => "game_over",
   };
 
   JsValue::from_serde(&turn).unwrap()

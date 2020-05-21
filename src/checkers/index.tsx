@@ -24,7 +24,7 @@ export interface PossibleMove {
   kills: TileCords | null;
 }
 
-export type Turn = "red" | "black";
+export type Turn = "red" | "black" | "game_over";
 
 export const BOARD_SIZE = 8;
 export type Board = Tile[][];

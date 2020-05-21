@@ -9,6 +9,7 @@ pub type BoardData = MatrixN<Tile, U8>;
 pub enum Turn {
   Red,
   Black,
+  GameOver,
 }
 
 pub struct Board {
@@ -322,7 +323,28 @@ impl Board {
       self.turn = match self.turn {
         Turn::Red => Turn::Black,
         Turn::Black => Turn::Red,
+        Turn::GameOver => panic!("it's OVER dammit, get over it!"),
       };
     }
+
+    if self.count_black() == 0 || self.count_red() == 0 {
+      self.turn = Turn::GameOver
+    }
+  }
+
+  fn count_red(&self) -> usize {
+    self
+      .data
+      .iter()
+      .filter(|&&tile| tile == Tile::RedPawn || tile == Tile::RedQuin)
+      .count()
+  }
+
+  fn count_black(&self) -> usize {
+    self
+      .data
+      .iter()
+      .filter(|&&tile| tile == Tile::BlackPawn || tile == Tile::BlackQuin)
+      .count()
   }
 }

@@ -14,6 +14,8 @@ pub fn make_a_move(board: &mut Board) {
   let own_tiles = match board.turn {
     Turn::Red => [Tile::RedPawn, Tile::RedQuin],
     Turn::Black => [Tile::BlackPawn, Tile::BlackQuin],
+    // don't panic because this action could be caused by stupid user
+    Turn::GameOver => return,
   };
 
   // assumes that each pawn will have on average 2 moves
