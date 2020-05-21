@@ -49,6 +49,23 @@ export const BoardView = () => {
     setSelectedCords(tile);
   }, [board, getPossibleMoves]);
 
+  const [redAutoAI, setRedAutoAI] = useState(false);
+  const [blackAutoAI, setBlackAutoAI] = useState(false);
+
+  useEffect(() => {
+    if (turn != "red" || !redAutoAI) return;
+
+    const handle = setTimeout(makeAMove, 250);
+    return () => clearInterval(handle);
+  }, [turn, redAutoAI, makeAMove, board]);
+
+  useEffect(() => {
+    if (turn != "black" || !blackAutoAI) return;
+
+    const handle = setTimeout(makeAMove, 250);
+    return () => clearInterval(handle);
+  }, [turn, blackAutoAI, makeAMove, board]);
+
   return (
     <>
       <h1>
@@ -62,7 +79,27 @@ export const BoardView = () => {
           {turn?.toUpperCase()}
         </span>
       </h1>
-      <button onClick={() => makeAMove()}>AI</button>
+
+      <button onClick={() => makeAMove()}>MANUAL AI</button>
+
+      <label htmlFor="red-auto-ai" style={{ color: "red" }}>
+        RED AUTO AI
+      </label>
+      <input
+        id="red-auto-ai"
+        type="checkbox"
+        checked={redAutoAI}
+        onChange={() => setRedAutoAI(!redAutoAI)}
+      />
+
+      <label htmlFor="black-auto-ai">BLACK AUTO AI</label>
+      <input
+        id="black-auto-ai"
+        type="checkbox"
+        checked={blackAutoAI}
+        onChange={() => setBlackAutoAI(!blackAutoAI)}
+      />
+
       <table>
         <tbody>
           {board?.map((row, rowIdx) => (
