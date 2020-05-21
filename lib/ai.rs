@@ -11,9 +11,9 @@ struct AIMove {
 }
 
 pub fn make_a_move(board: &mut Board) {
-  let enemy_tiles = match board.turn {
-    Turn::Red => [Tile::BlackPawn, Tile::BlackQuin],
-    Turn::Black => [Tile::RedPawn, Tile::RedQuin],
+  let own_tiles = match board.turn {
+    Turn::Red => [Tile::RedPawn, Tile::RedQuin],
+    Turn::Black => [Tile::BlackPawn, Tile::BlackQuin],
   };
 
   // assumes that each pawn will have on average 2 moves
@@ -23,7 +23,7 @@ pub fn make_a_move(board: &mut Board) {
 
   for (col_idx, column) in board.data.column_iter().enumerate() {
     for (row_idx, tile) in column.iter().enumerate() {
-      if enemy_tiles.iter().any(|enemy| enemy == tile) {
+      if !own_tiles.iter().any(|own| own == tile) {
         continue;
       }
 
