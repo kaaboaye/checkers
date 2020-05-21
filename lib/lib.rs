@@ -12,6 +12,19 @@ use crate::board::{Board, Turn};
 use crate::position::Position;
 use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen]
+extern "C" {
+  #[wasm_bindgen(js_namespace = console)]
+  pub fn log(s: &str);
+}
+
+#[macro_export]
+macro_rules! console_log {
+  // Note that this is using the `log` function imported above during
+  // `bare_bones`
+  ($($t:tt)*) => (crate::log(&format_args!($($t)*).to_string()))
+}
+
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
 // allocator.
 //
@@ -62,12 +75,6 @@ pub fn getTurn() -> JsValue {
   };
 
   JsValue::from_serde(&turn).unwrap()
-}
-
-#[wasm_bindgen]
-#[allow(non_snake_case)]
-pub fn getLog() -> JsValue {
-  JsValue::from_serde(&board().event_log).unwrap()
 }
 
 #[derive(Serialize)]

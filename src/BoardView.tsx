@@ -7,14 +7,12 @@ import {
   useMovePawn,
   PossibleMove,
   useTurn,
-  useLog,
 } from "./checkers";
 import { TileView } from "./TileView";
 
 export const BoardView = () => {
   const board = useBoard();
   const turn = useTurn();
-  const log = useLog();
   const possibleMoves = usePossibleMoves();
   const getPossibleMoves = useGetPossibleMoves();
   const movePawn = useMovePawn();
@@ -83,10 +81,6 @@ export const BoardView = () => {
           ))}
         </tbody>
       </table>
-
-      {log.map((logEntry, idx) => (
-        <pre key={idx}>{JSON.stringify(logEntry)}</pre>
-      ))}
     </>
   );
 };
