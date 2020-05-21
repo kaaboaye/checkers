@@ -13,11 +13,11 @@ struct AIMove {
 const MAX_DEPTH: u8 = 3;
 
 pub fn make_a_move(board: &mut Board) {
-  let best_of_ai = min_max(board, 1, 0);
+  let best_of_ai = min_max(board, 1, 0, 0);
   console_log!("best of ai {}", best_of_ai);
 }
 
-fn min_max(board: &mut Board, depth: u8, previous_score: i16) -> i16 {
+fn min_max(board: &mut Board, depth: u8, previous_score: i16, best_score: i16) -> i16 {
   if depth > MAX_DEPTH {
     return previous_score;
   }
@@ -47,30 +47,51 @@ fn min_max(board: &mut Board, depth: u8, previous_score: i16) -> i16 {
       let score_sign = (depth as i16 % 2) * 2 - 1;
 
       let from = (row_idx, col_idx);
-      let tile_moves = board.possible_moves(from).into_iter().map(|possible_move| {
-        let to = possible_move.destination;
-        let kills = possible_move.kills;
+      let tile_moves = board
+        .possible_moves(from)
+        .into_iter()
+        .map(|possible_move| {
+          let to = possible_move.destination;
+          let kills = possible_move.kills;
 
-        let move_score =
-          optional_tile_score(possible_move.kills.map(|position| board.data[position]));
+          let move_score =
+            optional_tile_score(possible_move.kills.map(|position| board.data[position]));
 
-        let score = previous_score + (score_sign * move_score);
+          let score = previous_score + (score_sign * move_score);
 
-        let mut simulation = board.clone();
-        simulation.move_pawn(from, to);
+          let mut simulation = board.clone();
+          simulation.move_pawn(from, to);
 
-        // if another move within given turn is possible, do it
-        let depth_change = (board.turn != simulation.turn) as u8;
+          // alpha beta pruning
+          if board.turn != simulation.turn
+            && best_score - score >= (MAX_DEPTH as i16 - depth as i16 * 2)
+          {
+            return AIMove {
+              from,
+              to,
+              kills,
+              score: -1000,
+            };
+          }
 
-        let score = min_max(&mut simulation, depth + depth_change, score);
+          // if another move within given turn is possible, do it
+          let depth_change = (board.turn != simulation.turn) as u8;
+          let score = min_max(
+            &mut simulation,
+            depth + depth_change,
+            score,
+            std::cmp::max(score, best_score),
+          );
 
-        AIMove {
-          from,
-          to,
-          kills,
-          score,
-        }
-      });
+          AIMove {
+            from,
+            to,
+            kills,
+            score,
+          }
+        })
+        // filter out pruned moves
+        .filter(|possible_move| possible_move.score > -100);
 
       possible_moves.extend(tile_moves);
     }
