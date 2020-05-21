@@ -7,6 +7,7 @@ import {
   useMovePawn,
   PossibleMove,
   useTurn,
+  useMakeAMove,
 } from "./checkers";
 import { TileView } from "./TileView";
 
@@ -16,6 +17,7 @@ export const BoardView = () => {
   const possibleMoves = usePossibleMoves();
   const getPossibleMoves = useGetPossibleMoves();
   const movePawn = useMovePawn();
+  const makeAMove = useMakeAMove();
 
   const [selectedCords, setSelectedCords] = useState<TileCords>({
     row: 0,
@@ -55,6 +57,7 @@ export const BoardView = () => {
           {turn?.toUpperCase()}
         </span>
       </h1>
+      <button onClick={() => makeAMove()}>AI</button>
       <table>
         <tbody>
           {board?.map((row, rowIdx) => (

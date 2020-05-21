@@ -5,7 +5,7 @@ use nalgebra::{MatrixN, U8};
 const BOARD_SIZE: usize = 8;
 pub type BoardData = MatrixN<Tile, U8>;
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone)]
 pub enum Turn {
   Red,
   Black,

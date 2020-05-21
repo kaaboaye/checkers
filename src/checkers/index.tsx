@@ -66,6 +66,7 @@ function wrapRust(rust: Remote<import("./worker").Checkers>) {
       rust.getPossibleMoves(row, col) as Promise<PossibleMove[]>,
     movePawn: (from: TileCords, to: TileCords) =>
       rust.movePawn(from.row, from.col, to.row, to.col),
+    makeAMove: () => rust.makeAMove(),
   };
 }
 
@@ -90,6 +91,7 @@ interface CheckersState {
   getTurn: CheckersThunk;
   getPossibleMoves: CheckersThunk<TileCords>;
   movePawn: CheckersThunk<{ from: TileCords; to: TileCords }>;
+  makeAMove: CheckersThunk;
 }
 
 const checkersContext = createContextStore<CheckersState, void>({
@@ -172,6 +174,13 @@ const checkersContext = createContextStore<CheckersState, void>({
 
     state.checkers.movePawn(from, to).then(() => actions.fetchState());
   }),
+
+  makeAMove: thunk((actions, _, { getState }) => {
+    const state = getState();
+    if (state.checkers === null) return;
+
+    state.checkers.makeAMove().then(() => actions.fetchState());
+  }),
 });
 
 function StoreInitializer() {
@@ -213,3 +222,6 @@ export const useGetPossibleMoves = () =>
 
 export const useMovePawn = () =>
   checkersContext.useStoreActions((store) => store.movePawn);
+
+export const useMakeAMove = () =>
+  checkersContext.useStoreActions((store) => store.makeAMove);

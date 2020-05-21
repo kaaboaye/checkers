@@ -4,10 +4,12 @@ extern crate lazy_mut;
 extern crate serde_derive;
 extern crate nalgebra;
 
+mod ai;
 mod board;
 mod position;
 mod tile;
 
+use crate::ai::make_a_move;
 use crate::board::{Board, Turn};
 use crate::position::Position;
 use wasm_bindgen::prelude::*;
@@ -102,4 +104,10 @@ pub fn getPossibleMoves(row: usize, col: usize) -> JsValue {
 #[allow(non_snake_case)]
 pub fn movePawn(from_row: usize, from_col: usize, to_row: usize, to_col: usize) {
   board_mut().move_pawn((from_row, from_col), (to_row, to_col))
+}
+
+#[wasm_bindgen]
+#[allow(non_snake_case)]
+pub fn makeAMove() {
+  make_a_move(board_mut())
 }
