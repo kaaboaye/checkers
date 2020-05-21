@@ -12,6 +12,8 @@ export enum Tile {
   BlackQuin,
 }
 
+console.log("tile", Tile);
+
 export interface TileCords {
   row: number;
   col: number;
@@ -20,6 +22,16 @@ export interface TileCords {
 export interface PossibleMove {
   destination: TileCords;
   kills: TileCords | null;
+}
+
+export interface LogEntry {
+  pawn: string;
+  movedFrom: TileCords;
+  movedTo: TileCords;
+  killed: null | {
+    pawn: string;
+    position: TileCords;
+  };
 }
 
 export type Turn = "red" | "black";
@@ -60,6 +72,18 @@ function wrapRust(rust: Remote<import("./worker").Checkers>) {
   return {
     getTiles: () => rust.getTiles() as Promise<Tile[]>,
     getTurn: () => rust.getTurn() as Promise<"red" | "black">,
+    getLog: () =>
+      (rust.getLog() as Promise<any>).then((entries) =>
+        entries.map(
+          (log: any) =>
+            ({
+              pawn: log.pawn,
+              movedFrom: log.moved_from,
+              movedTo: log.moved_to,
+              killed: log.killed,
+            } as LogEntry)
+        )
+      ) as Promise<LogEntry[]>,
     getPossibleMoves: ({ row, col }: TileCords) =>
       rust.getPossibleMoves(row, col) as Promise<PossibleMove[]>,
     movePawn: (from: TileCords, to: TileCords) =>
@@ -75,17 +99,20 @@ interface CheckersState {
   checkers: Checkers | null;
   board: Board | null;
   turn: Turn | null;
+  eventLog: LogEntry[];
   possibleMoves: PossibleMove[];
 
   setCheckers: CheckersAction<Checkers>;
   setBoard: CheckersAction<Tile[]>;
   setTurn: CheckersAction<Turn>;
+  setLog: CheckersAction<LogEntry[]>;
   setPossibleMoves: CheckersAction<PossibleMove[]>;
 
   initialize: CheckersThunk;
   fetchState: CheckersThunk;
   getBoard: CheckersThunk;
   getTurn: CheckersThunk;
+  getLog: CheckersThunk;
   getPossibleMoves: CheckersThunk<TileCords>;
   movePawn: CheckersThunk<{ from: TileCords; to: TileCords }>;
 }
@@ -94,6 +121,7 @@ const checkersContext = createContextStore<CheckersState, void>({
   checkers: null,
   board: null,
   turn: null,
+  eventLog: [],
   possibleMoves: [],
 
   setCheckers: action((state, checkers) => {
@@ -122,6 +150,10 @@ const checkersContext = createContextStore<CheckersState, void>({
     state.turn = turn;
   }),
 
+  setLog: action((state, log) => {
+    state.eventLog = log;
+  }),
+
   setPossibleMoves: action((state, positions) => {
     state.possibleMoves = positions;
   }),
@@ -139,6 +171,7 @@ const checkersContext = createContextStore<CheckersState, void>({
   fetchState: thunk((actions) => {
     actions.getBoard();
     actions.getTurn();
+    actions.getLog();
   }),
 
   getBoard: thunk((actions, _, { getState }) => {
@@ -153,6 +186,13 @@ const checkersContext = createContextStore<CheckersState, void>({
     if (state.checkers === null) return;
 
     state.checkers.getTurn().then((turn) => actions.setTurn(turn));
+  }),
+
+  getLog: thunk((actions, _, { getState }) => {
+    const state = getState();
+    if (state.checkers === null) return;
+
+    state.checkers.getLog().then((log) => actions.setLog(log));
   }),
 
   getPossibleMoves: thunk((actions, position, { getState }) => {
@@ -202,6 +242,9 @@ export const useBoard = () =>
 
 export const useTurn = () =>
   checkersContext.useStoreState((store) => store.turn);
+
+export const useLog = () =>
+  checkersContext.useStoreState((store) => store.eventLog);
 
 export const usePossibleMoves = () =>
   checkersContext.useStoreState((store) => store.possibleMoves);

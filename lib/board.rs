@@ -1,5 +1,20 @@
+use crate::position::Position;
 use crate::tile::Tile;
 use nalgebra::{MatrixN, U8};
+
+#[derive(Serialize)]
+pub struct Victim {
+  pub pawn: Tile,
+  pub position: Position,
+}
+
+#[derive(Serialize)]
+pub struct LogEntry {
+  pawn: Tile,
+  moved_from: Position,
+  moved_to: Position,
+  killed: Option<Victim>,
+}
 
 const BOARD_SIZE: usize = 8;
 pub type BoardData = MatrixN<Tile, U8>;
@@ -13,6 +28,7 @@ pub enum Turn {
 pub struct Board {
   pub data: BoardData,
   pub turn: Turn,
+  pub event_log: Vec<LogEntry>,
 }
 
 pub struct PawnMove {
@@ -31,6 +47,7 @@ impl Board {
     Board {
       data,
       turn: Turn::Red,
+      event_log: Vec::new(),
     }
   }
 
@@ -225,12 +242,29 @@ impl Board {
     self.data[from] = Tile::Nothing;
 
     if let Some(kills) = possible_move.unwrap().kills {
+      self.event_log.push(LogEntry {
+        pawn: self.data[to],
+        moved_from: Position::from(from),
+        moved_to: Position::from(to),
+        killed: Some(Victim {
+          pawn: self.data[kills],
+          position: Position::from(kills),
+        }),
+      });
+
       self.data[kills] = Tile::Nothing;
     } else {
       self.turn = match self.turn {
         Turn::Red => Turn::Black,
         Turn::Black => Turn::Red,
       };
+
+      self.event_log.push(LogEntry {
+        pawn: self.data[to],
+        moved_from: Position::from(from),
+        moved_to: Position::from(to),
+        killed: None,
+      });
     }
   }
 }
