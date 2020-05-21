@@ -13,11 +13,11 @@ struct AIMove {
 const MAX_DEPTH: u8 = 3;
 
 pub fn make_a_move(board: &mut Board) {
-  let best_of_ai = do_make_a_move(board, 1, 0);
+  let best_of_ai = min_max(board, 1, 0);
   console_log!("best of ai {}", best_of_ai);
 }
 
-fn do_make_a_move(board: &mut Board, depth: u8, previous_score: i16) -> i16 {
+fn min_max(board: &mut Board, depth: u8, previous_score: i16) -> i16 {
   if depth > MAX_DEPTH {
     return previous_score;
   }
@@ -62,7 +62,7 @@ fn do_make_a_move(board: &mut Board, depth: u8, previous_score: i16) -> i16 {
         // if another move within given turn is possible, do it
         let depth_change = (board.turn != simulation.turn) as u8;
 
-        let score = do_make_a_move(&mut simulation, depth + depth_change, score);
+        let score = min_max(&mut simulation, depth + depth_change, score);
 
         AIMove {
           from,
