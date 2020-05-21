@@ -4,8 +4,20 @@ use nalgebra::{MatrixN, U8};
 const BOARD_SIZE: usize = 8;
 pub type BoardData = MatrixN<Tile, U8>;
 
+#[derive(PartialEq, Eq)]
+pub enum Turn {
+  Red,
+  Black,
+}
+
 pub struct Board {
   pub data: BoardData,
+  pub turn: Turn,
+}
+
+pub struct PawnMove {
+  pub destination: (usize, usize),
+  pub kills: Option<(usize, usize)>,
 }
 
 impl Board {
@@ -16,37 +28,209 @@ impl Board {
       _ => Tile::Nothing,
     });
 
-    Board { data }
+    Board {
+      data,
+      turn: Turn::Red,
+    }
   }
 
-  pub fn possible_moves(&self, (row, col): (usize, usize)) -> Vec<(usize, usize)> {
-    if (row + col) % 2 == 0 || self.data[(row, col)] == Tile::Nothing {
+  pub fn possible_moves(&self, position: (usize, usize)) -> Vec<PawnMove> {
+    let (row, col) = position;
+
+    if (row + col) % 2 == 0 {
       return vec![];
     }
-    [
-      (row + 1, col + 1),
-      (row + 1, col - 1),
-      (row - 1, col + 1),
-      (row - 1, col - 1),
-    ]
-    .iter()
-    .cloned()
-    .filter(|(row, col)| {
-      (0..BOARD_SIZE).contains(row)
-        && (0..BOARD_SIZE).contains(col)
-        && self.data[(*row, *col)] == Tile::Nothing
-    })
-    .collect()
+
+    match self.data[position] {
+      Tile::Nothing => Vec::new(),
+      Tile::BlackPawn => {
+        if self.turn == Turn::Red {
+          return Vec::new();
+        }
+
+        let mut moves = Vec::new();
+
+        // move left down
+        if col > 0 && row < BOARD_SIZE - 1 {
+          let destination = (row + 1, col - 1);
+          if self.data[destination] == Tile::Nothing {
+            moves.push(PawnMove {
+              destination,
+              kills: None,
+            });
+          } else if (self.data[destination] == Tile::RedPawn
+            || self.data[destination] == Tile::RedQuin)
+            && (col > 1 && row < BOARD_SIZE - 2)
+          {
+            let kills = Some(destination);
+            let destination = (row + 2, col - 2);
+
+            if self.data[destination] == Tile::Nothing {
+              moves.push(PawnMove { destination, kills })
+            }
+          }
+        }
+
+        // move right down
+        if col < BOARD_SIZE - 1 && row < BOARD_SIZE - 1 {
+          let destination = (row + 1, col + 1);
+          if self.data[destination] == Tile::Nothing {
+            moves.push(PawnMove {
+              destination,
+              kills: None,
+            });
+          } else if (self.data[destination] == Tile::RedPawn
+            || self.data[destination] == Tile::RedQuin)
+            && (col < BOARD_SIZE - 2 && row < BOARD_SIZE - 2)
+          {
+            let kills = Some(destination);
+            let destination = (row + 2, col + 2);
+
+            if self.data[destination] == Tile::Nothing {
+              moves.push(PawnMove { destination, kills })
+            }
+          }
+        }
+
+        // kill left up
+        if col > 1 && row > 1 {
+          let destination = (row - 2, col - 2);
+          let kills = (row - 1, col - 1);
+
+          if self.data[destination] == Tile::Nothing
+            && (self.data[kills] == Tile::RedPawn || self.data[kills] == Tile::RedQuin)
+          {
+            moves.push(PawnMove {
+              destination,
+              kills: Some(kills),
+            })
+          }
+        }
+
+        // kill right up
+        if col < BOARD_SIZE - 2 && row > 1 {
+          let destination = (row - 2, col + 2);
+          let kills = (row - 1, col + 1);
+
+          if self.data[destination] == Tile::Nothing
+            && (self.data[kills] == Tile::RedPawn || self.data[kills] == Tile::RedQuin)
+          {
+            moves.push(PawnMove {
+              destination,
+              kills: Some(kills),
+            })
+          }
+        }
+
+        moves
+      }
+      Tile::RedPawn => {
+        if self.turn == Turn::Black {
+          return Vec::new();
+        }
+
+        let mut moves = Vec::new();
+
+        // move left up
+        if col > 0 && row > 0 {
+          let destination = (row - 1, col - 1);
+          if self.data[destination] == Tile::Nothing {
+            moves.push(PawnMove {
+              destination,
+              kills: None,
+            });
+          } else if (self.data[destination] == Tile::BlackPawn
+            || self.data[destination] == Tile::BlackQuin)
+            && (col > 1 && row > 1)
+          {
+            let kills = Some(destination);
+            let destination = (row - 2, col - 2);
+
+            if self.data[destination] == Tile::Nothing {
+              moves.push(PawnMove { destination, kills })
+            }
+          }
+        }
+
+        // move right up
+        if col < BOARD_SIZE - 1 && row > 0 {
+          let destination = (row - 1, col + 1);
+          if self.data[destination] == Tile::Nothing {
+            moves.push(PawnMove {
+              destination,
+              kills: None,
+            });
+          } else if (self.data[destination] == Tile::BlackPawn
+            || self.data[destination] == Tile::BlackQuin)
+            && (col < BOARD_SIZE - 2 && row > 1)
+          {
+            let kills = Some(destination);
+            let destination = (row - 2, col + 2);
+
+            if self.data[destination] == Tile::Nothing {
+              moves.push(PawnMove { destination, kills })
+            }
+          }
+        }
+
+        // kill left down
+        if col > 1 && row < BOARD_SIZE - 2 {
+          let destination = (row + 2, col - 2);
+          let kills = (row + 1, col - 1);
+
+          if self.data[destination] == Tile::Nothing
+            && (self.data[kills] == Tile::BlackPawn || self.data[kills] == Tile::BlackQuin)
+          {
+            moves.push(PawnMove {
+              destination,
+              kills: Some(kills),
+            })
+          }
+        }
+
+        // kill right down
+        if col < BOARD_SIZE - 2 && row < BOARD_SIZE - 2 {
+          let destination = (row + 2, col + 2);
+          let kills = (row + 1, col + 1);
+
+          if self.data[destination] == Tile::Nothing
+            && (self.data[kills] == Tile::BlackPawn || self.data[kills] == Tile::BlackQuin)
+          {
+            moves.push(PawnMove {
+              destination,
+              kills: Some(kills),
+            })
+          }
+        }
+
+        moves
+      }
+      Tile::BlackQuin => Vec::new(),
+      Tile::RedQuin => Vec::new(),
+    }
   }
 
   pub fn move_pawn(&mut self, from: (usize, usize), to: (usize, usize)) {
-    let destinations = self.possible_moves(from);
+    let moves = self.possible_moves(from);
 
-    if !destinations.contains(&to) {
+    let possible_move = moves
+      .iter()
+      .find(|possible_move| possible_move.destination == to);
+
+    if possible_move.is_none() {
       return;
     }
 
     self.data[to] = self.data[from];
     self.data[from] = Tile::Nothing;
+
+    if let Some(kills) = possible_move.unwrap().kills {
+      self.data[kills] = Tile::Nothing;
+    } else {
+      self.turn = match self.turn {
+        Turn::Red => Turn::Black,
+        Turn::Black => Turn::Red,
+      };
+    }
   }
 }

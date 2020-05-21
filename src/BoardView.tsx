@@ -5,11 +5,14 @@ import {
   TileCords,
   useGetPossibleMoves,
   useMovePawn,
+  PossibleMove,
+  useTurn,
 } from "./checkers";
 import { TileView } from "./TileView";
 
 export const BoardView = () => {
   const board = useBoard();
+  const turn = useTurn();
   const possibleMoves = usePossibleMoves();
   const getPossibleMoves = useGetPossibleMoves();
   const movePawn = useMovePawn();
@@ -22,12 +25,12 @@ export const BoardView = () => {
   const onTileClick = useCallback(
     (cords: TileCords) => {
       const to = possibleMoves.find(
-        (destination) =>
+        ({ destination }) =>
           cords.row === destination.row && cords.col === destination.col
       );
 
       if (to) {
-        movePawn({ from: selectedCords, to });
+        movePawn({ from: selectedCords, to: to.destination });
       } else {
         setSelectedCords(cords);
         getPossibleMoves(cords);
@@ -45,46 +48,63 @@ export const BoardView = () => {
   }, [board, getPossibleMoves]);
 
   return (
-    <table>
-      <tbody>
-        {board?.map((row, rowIdx) => (
-          <tr key={rowIdx}>
-            {row.map((tile, colIdx) => (
-              <td
-                key={colIdx}
-                style={{
-                  backgroundColor: tileBackgroundColor(
-                    rowIdx,
-                    colIdx,
-                    possibleMoves
-                  ),
-                  textAlign: "center",
-                  width: "64px",
-                  height: "64px",
-                }}
-                onClick={() => onTileClick({ row: rowIdx, col: colIdx })}
-              >
-                <TileView tile={tile} />
-              </td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <>
+      <h1>
+        Turn{" "}
+        <span style={{ color: turn == "red" ? "red" : "black" }}>
+          {turn?.toUpperCase()}
+        </span>
+      </h1>
+      <table>
+        <tbody>
+          {board?.map((row, rowIdx) => (
+            <tr key={rowIdx}>
+              {row.map((tile, colIdx) => (
+                <td
+                  key={colIdx}
+                  style={{
+                    backgroundColor: tileBackgroundColor(
+                      rowIdx,
+                      colIdx,
+                      possibleMoves
+                    ),
+                    textAlign: "center",
+                    width: "64px",
+                    height: "64px",
+                  }}
+                  onClick={() => onTileClick({ row: rowIdx, col: colIdx })}
+                >
+                  <TileView tile={tile} />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   );
 };
 
 function tileBackgroundColor(
   rowIdx: number,
   colIdx: number,
-  possibleMoves: TileCords[]
+  possibleMoves: PossibleMove[]
 ) {
   if (
     possibleMoves.findIndex(
-      (cords) => cords.row === rowIdx && cords.col === colIdx
+      ({ destination }) =>
+        destination.row === rowIdx && destination.col === colIdx
     ) !== -1
   ) {
     return "gold";
+  }
+
+  if (
+    possibleMoves.findIndex(
+      ({ kills }) => kills && kills.row === rowIdx && kills.col === colIdx
+    ) !== -1
+  ) {
+    return "pink";
   }
 
   return (rowIdx + colIdx) % 2 ? "gray" : "white";

@@ -5,11 +5,9 @@ extern crate serde_derive;
 extern crate nalgebra;
 
 mod board;
-mod position;
 mod tile;
 
-use crate::board::Board;
-use position::Position;
+use crate::board::{Board, Turn};
 use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
@@ -55,15 +53,44 @@ pub fn getTiles() -> JsValue {
 
 #[wasm_bindgen]
 #[allow(non_snake_case)]
+pub fn getTurn() -> JsValue {
+  let turn = match board().turn {
+    Turn::Red => "red",
+    Turn::Black => "black",
+  };
+
+  JsValue::from_serde(&turn).unwrap()
+}
+
+#[derive(Serialize)]
+pub struct JsPosition {
+  row: usize,
+  col: usize,
+}
+
+impl From<(usize, usize)> for JsPosition {
+  fn from((row, col): (usize, usize)) -> Self {
+    JsPosition { row, col }
+  }
+}
+
+#[derive(Serialize)]
+pub struct JsPossibleMove {
+  destination: JsPosition,
+  kills: Option<JsPosition>,
+}
+
+#[wasm_bindgen]
+#[allow(non_snake_case)]
 pub fn getPossibleMoves(row: usize, col: usize) -> JsValue {
   let values = board()
     .possible_moves((row, col))
     .iter()
-    .map(|(row, col)| Position {
-      row: *row,
-      col: *col,
+    .map(|possible_move| JsPossibleMove {
+      destination: JsPosition::from(possible_move.destination),
+      kills: possible_move.kills.map(|kill| JsPosition::from(kill)),
     })
-    .collect::<Vec<Position>>();
+    .collect::<Vec<_>>();
 
   JsValue::from_serde(&values).unwrap()
 }
