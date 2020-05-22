@@ -10,17 +10,40 @@ struct AIMove {
   score: i16,
 }
 
+#[derive(Debug)]
+struct AIStats {
+  total_moves_considered: u32,
+  min_max_iterations: u32,
+  turns_pruned: u32,
+  turns_played: u32,
+}
+
 const MAX_DEPTH: u8 = 7;
 
 pub fn make_a_move(board: &mut Board) {
-  let best_of_ai = min_max(board, 1, 0, 0);
-  console_log!("best of ai {}", best_of_ai);
+  let mut stats = AIStats {
+    total_moves_considered: 0,
+    min_max_iterations: 0,
+    turns_pruned: 0,
+    turns_played: 0,
+  };
+
+  let _ = min_max(&mut stats, board, 1, 0, 0);
+  console_log!("AI stats {:?}", stats);
 }
 
-fn min_max(board: &mut Board, depth: u8, previous_score: i16, best_score: i16) -> i16 {
+fn min_max(
+  stats: &mut AIStats,
+  board: &mut Board,
+  depth: u8,
+  previous_score: i16,
+  best_score: i16,
+) -> i16 {
   if depth > MAX_DEPTH {
     return previous_score;
   }
+
+  stats.min_max_iterations += 1;
 
   let own_tiles = match board.turn {
     Turn::Red => [Tile::RedPawn, Tile::RedQuin],
@@ -49,6 +72,8 @@ fn min_max(board: &mut Board, depth: u8, previous_score: i16, best_score: i16) -
       let from = (row_idx, col_idx);
 
       for possible_move in board.possible_moves(from).into_iter() {
+        stats.total_moves_considered += 1;
+
         let to = possible_move.destination;
         let kills = possible_move.kills;
 
@@ -60,16 +85,20 @@ fn min_max(board: &mut Board, depth: u8, previous_score: i16, best_score: i16) -
         let mut simulation = board.clone();
         simulation.move_pawn(from, to);
 
-        // alpha beta pruning
-        if board.turn != simulation.turn
-          && best_score - score >= (MAX_DEPTH as i16 - depth as i16 * 2)
-        {
-          continue;
+        if board.turn != simulation.turn {
+          // alpha beta pruning
+          if best_score - score >= (MAX_DEPTH as i16 - depth as i16 * 2) {
+            stats.turns_pruned += 1;
+            continue;
+          } else {
+            stats.turns_played += 1;
+          }
         }
 
         // if another move within given turn is possible, do it
         let depth_change = (board.turn != simulation.turn) as u8;
         let score = min_max(
+          stats,
           &mut simulation,
           depth + depth_change,
           score,
