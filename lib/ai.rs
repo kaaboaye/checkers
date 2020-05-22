@@ -10,7 +10,7 @@ struct AIMove {
   score: i16,
 }
 
-const MAX_DEPTH: u8 = 5;
+const MAX_DEPTH: u8 = 7;
 
 pub fn make_a_move(board: &mut Board) {
   let best_of_ai = min_max(board, 1, 0, 0);
