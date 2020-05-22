@@ -29,7 +29,7 @@ pub fn make_a_move(board: &mut Board) {
   };
 
   let _ = min_max(&mut stats, board, 1, 0, 0);
-  console_log!("AI stats {:?}", stats);
+  console_log!("{:?}", stats);
 }
 
 fn min_max(
