@@ -1,5 +1,6 @@
 # checkers
 
+[Available here online](https://kaaboaye.github.io/checkers/)
 
 ## Development
 
